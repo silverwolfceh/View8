@@ -52,3 +52,49 @@
     <li><code>-d</code>: Retrieves a hash (little-endian) and returns its corresponding version using brute force.</li>
     <li><code>-f</code>: Retrieves a file and returns its version.</li>
 </ul>
+
+### Building The Disassembler
+
+Guide/disassembler/patch based on [v8dasm](https://github.com/noelex/v8dasm) and <https://github.com/v8/v8/tree/11.3.244.8>.
+
+1. Check out your V8 version: <https://v8.dev/docs/source-code>
+2. Apply the [patch](./Disassembler/v8.patch):
+
+    ```sh
+    git apply v8.patch
+    ```
+
+3. Create a build configuration:
+
+    ```sh
+    ./tools/dev/v8gen.py x64.release
+    ```
+
+4. Edit the build flags in `out.gn/x64.release/args.gn` (copied the necessary ones from Node.js):
+
+    ```ini
+    dcheck_always_on = false
+    is_component_build = false
+    is_debug = false
+    target_cpu = "x64"
+    use_custom_libcxx = false
+    v8_monolithic = true
+    v8_use_external_startup_data = false
+
+    v8_static_library = true
+    v8_enable_disassembler = true
+    v8_enable_object_print = true
+    v8_enable_pointer_compression = false
+    ```
+
+5. Build the static library:
+
+    ```sh
+    ninja -C out.gn/x64.release v8_monolith
+    ```
+
+6. Compile the [disassembler](./Disassembler/v8dasm.cpp):
+
+    ```sh
+    g++ -g -I. -Iinclude v8dasm.cpp -o v8dasm -fno-rtti -lv8_monolith -lv8_libbase -lv8_libplatform -ldl -Lout.gn/x64.release/obj/ -pthread -std=c++17
+    ```

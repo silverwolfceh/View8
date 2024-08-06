@@ -1,0 +1,107 @@
+diff --git a/src/diagnostics/objects-printer.cc b/src/diagnostics/objects-printer.cc
+index 30d8095f62a..21e91384ee4 100644
+--- a/src/diagnostics/objects-printer.cc
++++ b/src/diagnostics/objects-printer.cc
+@@ -1821,7 +1821,6 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
+   } else {
+     os << "<unavailable>";
+   }
+-  PrintSourceCode(os);
+   // Script files are often large, thus only print their {Brief} representation.
+   os << "\n - script: " << Brief(script());
+   os << "\n - function token position: " << function_token_position();
+@@ -1844,6 +1843,10 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
+     os << "<none>";
+   }
+   os << "\n";
++  os << "\nStart BytecodeArray\n";
++  this->GetBytecodeArray(isolate).Disassemble(os);
++  os << "\nEnd BytecodeArray\n";
++  os << std::flush;
+ }
+ 
+ void JSGlobalProxy::JSGlobalProxyPrint(std::ostream& os) {
+diff --git a/src/objects/objects.cc b/src/objects/objects.cc
+index 43ea4a73502..503fed68ba4 100644
+--- a/src/objects/objects.cc
++++ b/src/objects/objects.cc
+@@ -1828,6 +1828,16 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+     os << accumulator.ToCString().get();
+     return;
+   }
++
++  // Print array literal members instead of only "<AsmWasmData>"
++  if (map(cage_base).instance_type() == ASM_WASM_DATA_TYPE) {
++    os << "<ArrayBoilerplateDescription> ";
++    ArrayBoilerplateDescription::cast(*this)
++        .constant_elements()
++        .HeapObjectShortPrint(os);
++    return;
++  }
++
+   switch (map(cage_base).instance_type()) {
+     case MAP_TYPE: {
+       os << "<Map";
+@@ -1913,15 +1923,20 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+          << "]>";
+       break;
+     case FIXED_ARRAY_TYPE:
+-      os << "<FixedArray[" << FixedArray::cast(*this).length() << "]>";
++      os << "\nStart FixedArray\n";
++      FixedArray::cast(*this).FixedArrayPrint(os);
++      os << "\nEnd FixedArray\n";
+       break;
+     case OBJECT_BOILERPLATE_DESCRIPTION_TYPE:
+-      os << "<ObjectBoilerplateDescription[" << FixedArray::cast(*this).length()
+-         << "]>";
++      os << "\nStart ObjectBoilerplateDescription\n";
++      ObjectBoilerplateDescription::cast(*this)
++          .ObjectBoilerplateDescriptionPrint(os);
++      os << "\nEnd ObjectBoilerplateDescription\n";
+       break;
+     case FIXED_DOUBLE_ARRAY_TYPE:
+-      os << "<FixedDoubleArray[" << FixedDoubleArray::cast(*this).length()
+-         << "]>";
++      os << "\nStart FixedDoubleArray\n";
++      FixedDoubleArray::cast(*this).FixedDoubleArrayPrint(os);
++      os << "\nEnd FixedDoubleArray\n";
+       break;
+     case BYTE_ARRAY_TYPE:
+       os << "<ByteArray[" << ByteArray::cast(*this).length() << "]>";
+@@ -2000,6 +2015,9 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+       } else {
+         os << "<SharedFunctionInfo>";
+       }
++      os << "\nStart SharedFunctionInfo\n";
++      shared.SharedFunctionInfoPrint(os);
++      os << "\nEnd SharedFunctionInfo\n";
+       break;
+     }
+     case JS_MESSAGE_OBJECT_TYPE:
+diff --git a/src/snapshot/code-serializer.cc b/src/snapshot/code-serializer.cc
+index c83e8e4581a..f730fb722eb 100644
+--- a/src/snapshot/code-serializer.cc
++++ b/src/snapshot/code-serializer.cc
+@@ -447,6 +447,11 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
+     return MaybeHandle<SharedFunctionInfo>();
+   }
+ 
++  std::cout << "\nStart SharedFunctionInfo\n";
++  result->GetBytecodeArray(isolate).Disassemble(std::cout);
++  std::cout << "\nEnd SharedFunctionInfo\n";
++  std::cout << std::flush;
++
+   // Check whether the newly deserialized data should be merged into an
+   // existing Script from the Isolate compilation cache. If so, perform
+   // the merge in a single-threaded manner since this deserialization was
+@@ -652,9 +657,7 @@ SerializedCodeData::SerializedCodeData(const std::vector<byte>* payload,
+ 
+ SerializedCodeSanityCheckResult SerializedCodeData::SanityCheck(
+     uint32_t expected_source_hash) const {
+-  SerializedCodeSanityCheckResult result = SanityCheckWithoutSource();
+-  if (result != SerializedCodeSanityCheckResult::kSuccess) return result;
+-  return SanityCheckJustSource(expected_source_hash);
++  return SerializedCodeSanityCheckResult::kSuccess;
+ }
+ 
+ SerializedCodeSanityCheckResult SerializedCodeData::SanityCheckJustSource(
