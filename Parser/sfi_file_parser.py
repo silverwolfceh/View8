@@ -155,6 +155,8 @@ def parse_shared_function_info(lines, name, declarer=None):
     sfi.name = 'func_unknown'
     address = ""
     while (line := next(lines)) not in ("End SharedFunctionInfo", None):
+        if "- kind: " in line:
+            sfi.kind = parse("- kind: {}", line)[0]
         if "Parameter count" in line:
             sfi.argument_count = parse_parameter_count(line)
         elif "Register count" in line:

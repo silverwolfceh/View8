@@ -22,6 +22,7 @@ class SharedFunctionInfo:
         self.code = None
         self.const_pool = None
         self.exception_table = None
+        self.kind = None
 
     def is_fully_parsed(self):
         return all(
@@ -32,7 +33,11 @@ class SharedFunctionInfo:
         )
 
     def create_function_header(self):
-        return f"function {self.name}({', '.join([f'a{i}' for i in range(int(self.argument_count) - 1)])})"
+        parameters = ', '.join([f'a{i}' for i in range(int(self.argument_count) - 1)])
+        if self.kind == "AsyncFunction":
+            return f"async function {self.name}({parameters})"
+        else:
+            return f"function {self.name}({parameters})"
 
     def translate_bytecode(self):
         translate_bytecode(self.name, self.code, self.exception_table)
