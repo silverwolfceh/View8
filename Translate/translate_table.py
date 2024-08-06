@@ -74,6 +74,23 @@ def get_scope_id(args):
         return f"CURRENT-{args[2][1:-1]}"
     return f"{args[0]}-{args[2][1:-1]}"
 
+# https://github.com/v8/v8/blob/main/src/regexp/regexp-flags.h
+def parse_regex_flags(flags_num: int) -> str:
+    flags = ""
+    mapping = {
+        0b00000001: "g",
+        0b00000010: "i",
+        0b00000100: "m",
+        0b00001000: "s",
+        0b00010000: "u",
+        0b00100000: "y",
+        0b01000000: "d",
+        0b10000000: "v"
+    }
+    for flag, char in mapping.items():
+        if flags_num & flag:
+            flags += char
+    return flags
 
 operands = {
     #################
@@ -104,7 +121,7 @@ operands = {
     "CreateEmptyObjectLiteral": lambda obj: f"ACCU = {'{}'}",
     "CreateArrayLiteral": lambda obj: f"ACCU = new ConstPool{obj.args[0]}",
     "CreateObjectLiteral": lambda obj: f"ACCU = new ConstPool{obj.args[0]}",
-    "CreateRegExpLiteral": lambda obj: f"ACCU = \\ConstPool{obj.args[0]}\\",
+    "CreateRegExpLiteral": lambda obj: f"ACCU = /ConstPool{obj.args[0]}/{parse_regex_flags(int(obj.args[2][1:]))}",
     "CreateArrayFromIterable": lambda obj: f"ACCU = Array.from(ACCU)",
     "CreateClosure": lambda obj: f"ACCU = new func ConstPool{obj.args[0]}",
     "CreateRestParameter": lambda obj: "ACCU = ...",
