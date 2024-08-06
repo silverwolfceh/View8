@@ -119,8 +119,8 @@ operands = {
 
     "CreateEmptyArrayLiteral": lambda obj: f"ACCU = []",
     "CreateEmptyObjectLiteral": lambda obj: f"ACCU = {'{}'}",
-    "CreateArrayLiteral": lambda obj: f"ACCU = new ConstPool{obj.args[0]}",
-    "CreateObjectLiteral": lambda obj: f"ACCU = new ConstPool{obj.args[0]}",
+    "CreateArrayLiteral": lambda obj: f"ACCU = ConstPool{obj.args[0]}",
+    "CreateObjectLiteral": lambda obj: f"ACCU = ConstPool{obj.args[0]}",
     "CreateRegExpLiteral": lambda obj: f"ACCU = /ConstPool{obj.args[0]}/{parse_regex_flags(int(obj.args[2][1:]))}",
     "CreateArrayFromIterable": lambda obj: f"ACCU = Array.from(ACCU)",
     "CreateClosure": lambda obj: f"ACCU = new func ConstPool{obj.args[0]}",
@@ -255,10 +255,10 @@ operands = {
     "TestIn": lambda obj: f"ACCU = {obj.args[0]} in ACCU",
     "TestInstanceOf": lambda obj: f"ACCU = {obj.args[0]} instanceof ACCU",
     "TestReferenceEqual": lambda obj: f"ACCU = {obj.args[0]} === ACCU",
-    "TestUndetectable": lambda obj: f"ACCU = undetectable === ACCU",
+    "TestUndetectable": lambda obj: f"ACCU = ACCU == null",
     "TestTypeOf": lambda obj: f"ACCU = typeof(ACCU) == {get_typeof_value(obj.args[0])}",
-    "TestNull": lambda obj: f"ACCU = null == ACCU",
-    "TestUndefined": lambda obj: f"ACCU = undefined == ACCU",
+    "TestNull": lambda obj: f"ACCU = ACCU === null",
+    "TestUndefined": lambda obj: f"ACCU = ACCU === undefined",
 
     ###############
     # To operands #
@@ -277,9 +277,9 @@ operands = {
     #######################
 
     "Add": lambda obj: f"ACCU = ({obj.args[0]} + ACCU)",
-    "Inc": lambda obj: f"ACCU = (ACCU + 1)",
+    "Inc": lambda obj: f"ACCU++",
     "Sub": lambda obj: f"ACCU = ({obj.args[0]} - ACCU)",
-    "Dec": lambda obj: f"ACCU = (ACCU - 1)",
+    "Dec": lambda obj: f"ACCU--",
     "Mod": lambda obj: f"ACCU = ({obj.args[0]} % ACCU)",
     "Mul": lambda obj: f"ACCU = ({obj.args[0]} * ACCU)",
     "Exp": lambda obj: f"ACCU = ({obj.args[0]} ** ACCU)",
@@ -292,7 +292,6 @@ operands = {
     "BitwiseNot": lambda obj: f"ACCU = ~(ACCU)",
     "ShiftRightLogical": lambda obj: f"ACCU = ({obj.args[0]} >>> ACCU)",
     "ShiftRight": lambda obj: f"ACCU = ({obj.args[0]} >> ACCU)",
-    "ShiftLeftLogical": lambda obj: f"ACCU = ({obj.args[0]} <<< ACCU)",
     "ShiftLeft": lambda obj: f"ACCU = ({obj.args[0]} << ACCU)",
 
     "AddSmi": lambda obj: f"ACCU = (ACCU + {obj.args[0][1:-1]})",
@@ -300,23 +299,21 @@ operands = {
     "ModSmi": lambda obj: f"ACCU = (ACCU % {obj.args[0][1:-1]})",
     "MulSmi": lambda obj: f"ACCU = (ACCU * {obj.args[0][1:-1]})",
     "ExpSmi": lambda obj: f"ACCU = (ACCU ** {obj.args[0]})",
-    "DivSmi": lambda obj: f"ACCU = (ACCU \\ {obj.args[0][1:-1]})",
-    "NegateSmi": lambda obj: f"ACCU = -(ACCU)",
+    "DivSmi": lambda obj: f"ACCU = (ACCU / {obj.args[0][1:-1]})",
     "BitwiseXorSmi": lambda obj: f"ACCU = (ACCU ^ {obj.args[0][1:-1]})",
     "BitwiseOrSmi": lambda obj: f"ACCU = (ACCU | {obj.args[0][1:-1]})",
     "BitwiseAndSmi": lambda obj: f"ACCU = (ACCU & {obj.args[0][1:-1]})",
     "BitwiseNotSmi": lambda obj: f"ACCU = ~(ACCU)",
     "ShiftRightLogicalSmi": lambda obj: f"ACCU = (ACCU >>> {obj.args[0][1:-1]})",
     "ShiftRightSmi": lambda obj: f"ACCU = (ACCU >> {obj.args[0][1:-1]})",
-    "ShiftLeftLogicalSmi": lambda obj: f"ACCU = (ACCU <<< {obj.args[0][1:-1]})",
     "ShiftLeftSmi": lambda obj: f"ACCU = (ACCU << {obj.args[0][1:-1]})",
 
     ##################
     # throw operands #
     ##################
 
-    "Throw": lambda obj: "",
-    "ReThrow": lambda obj: "",
+    "Throw": lambda obj: "throw ACCU",
+    "ReThrow": lambda obj: "throw ACCU", # TODO: used in try-finally block
     "ThrowSuperNotCalledIfHole": lambda obj: "",
     "ThrowSuperAlreadyCalledIfNotHole": lambda obj: "",
     "ThrowIfNotSuperConstructor": lambda obj: "",
@@ -329,9 +326,9 @@ operands = {
 
     "Mov": lambda obj: f"{obj.args[1]} = {obj.args[0]}",
     "Return": lambda obj: f"return ACCU",
-    "TypeOf": lambda obj: f"ACCU = TypeOf(ACCU)",
+    "TypeOf": lambda obj: f"ACCU = typeof(ACCU)",
     "GetIterator": lambda obj: f"ACCU = GetIterator({obj.args[0]})",
-    "GetSuperConstructor": lambda obj: f"{obj.args[0]} = supper",
+    "GetSuperConstructor": lambda obj: f"{obj.args[0]} = super",
     "DeletePropertySloppy": lambda obj: f"delete ACCU[{obj.args[0]}]",
     "DeletePropertyStrict": lambda obj: f"delete ACCU[{obj.args[0]}]",
 
@@ -345,7 +342,7 @@ operands = {
     "SwitchOnGeneratorState": lambda obj: "",
     "SwitchOnSmiNoFeedback": lambda obj: add_switch_on(obj) or "",
     "LdaTheHole": lambda obj: f"ACCU = null",
-    "Debugger": lambda obj: f"//Debugger",
+    "Debugger": lambda obj: f"debugger",
 
     ###################
     # context operands #
