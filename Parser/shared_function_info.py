@@ -46,7 +46,19 @@ class SharedFunctionInfo:
         simplify_translated_bytecode(self, self.code)
 
     def replace_const_pool(self):
-        replacements = {f"ConstPool[{idx}]": var for idx, var in enumerate(self.const_pool)}
+        def unescape(var):
+            if var.startswith('"') and var.endswith('"'):
+                return var[1:-1].replace('\\\\', '\\')
+            else:
+                return var
+
+        replacements = {}
+        replacements.update({
+            f"LiteralConstPool[{idx}]": var for idx, var in enumerate(self.const_pool)
+        })
+        replacements.update({
+            f"ConstPool[{idx}]": unescape(var) for idx, var in enumerate(self.const_pool)
+        })
         for line in self.code:
             if not line.visible:
                 continue

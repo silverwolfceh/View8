@@ -49,6 +49,7 @@ class TranslateBytecode:
             self.operator = self.operator.split('.')[0]
             self.args = self.args[0].split(", ") if self.args else []
             line.translated = operands.get(self.operator, operands["Not Found"])(self)
+            line.translated = line.translated.replace("<this>", "this")
 
         convert_jumps_to_logical_flow(name, code, self.jump_table)
 
