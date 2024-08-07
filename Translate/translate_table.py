@@ -110,8 +110,8 @@ operands = {
     "CallRuntime": lambda obj: f"ACCU = {obj.args[0][1:-1]}({', '.join(expand_reg_list(obj.args[1]))})",
     "CallJSRuntime": lambda obj: f"ACCU = {obj.args[0][1:-1]}({', '.join(expand_reg_list(obj.args[1]))})",
     "InvokeIntrinsic": lambda obj: invoke_intrinsic(obj.args),
-    "Construct": lambda obj: f"ACCU = {obj.args[0]}({', '.join(expand_reg_list(obj.args[1]))})",
-    "ConstructWithSpread": lambda obj: f"ACCU = {obj.args[0]}(...{', '.join(expand_reg_list(obj.args[1]))}))",
+    "Construct": lambda obj: f"ACCU = new {obj.args[0]}({', '.join(expand_reg_list(obj.args[1]))})",
+    "ConstructWithSpread": lambda obj: f"ACCU = new {obj.args[0]}(...{', '.join(expand_reg_list(obj.args[1]))})",
 
     ###################
     # Create operands #
