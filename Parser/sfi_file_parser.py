@@ -86,6 +86,8 @@ def parse_const_line(lines, func_name):
         return var_idx, parse_object(lines, func_name)
     if value.startswith("<Odd Oddball"):
         return var_idx, "null"
+    if value.startswith("<BigInt"):
+        return var_idx, parse("<BigInt {}>", value)[0] + "n"
     return var_idx, value.rstrip('>').split(" ", 1)[-1]
 
 
