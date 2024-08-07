@@ -335,8 +335,8 @@ operands = {
     "TypeOf": lambda obj: f"ACCU = typeof(ACCU)",
     "GetIterator": lambda obj: f"ACCU = GetIterator({obj.args[0]})",
     "GetSuperConstructor": lambda obj: f"{obj.args[0]} = super",
-    "DeletePropertySloppy": lambda obj: f"delete ACCU[{obj.args[0]}]",
-    "DeletePropertyStrict": lambda obj: f"delete ACCU[{obj.args[0]}]",
+    "DeletePropertySloppy": lambda obj: f"delete {obj.args[0]}[ACCU]",
+    "DeletePropertyStrict": lambda obj: f"delete {obj.args[0]}[ACCU]",
 
     ###################
     # ignore operands #
