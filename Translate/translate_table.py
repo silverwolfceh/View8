@@ -9,6 +9,12 @@ def expand_reg_list(reg_rang):
         return ["<this>"]
     return ['r' + str(i) for i in range(int(start), int(end) + 1, 1)]
 
+def expand_reg_list_spread(reg_rang):
+    regs = expand_reg_list(reg_rang)
+    if len(regs) == 1:
+        return f"...{regs[0]}"
+    else:
+        return f"{', '.join(regs[:-1])}, ...{regs[-1]}"
 
 def get_typeof_value(typeof_num):
     typeof_dict = {
@@ -106,12 +112,12 @@ operands = {
     "CallUndefinedReceiver0": lambda obj: f"ACCU = {obj.args[0]}()",
     "CallUndefinedReceiver1": lambda obj: f"ACCU = {obj.args[0]}({obj.args[1]})",
     "CallUndefinedReceiver2": lambda obj: f"ACCU = {obj.args[0]}({obj.args[1]}, {obj.args[2]})",
-    "CallWithSpread": lambda obj: f"ACCU = {obj.args[0]}(...{', '.join(expand_reg_list(obj.args[1]))})",
+    "CallWithSpread": lambda obj: f"ACCU = {obj.args[0]}({(expand_reg_list_spread(obj.args[1]))})",
     "CallRuntime": lambda obj: f"ACCU = {obj.args[0][1:-1]}({', '.join(expand_reg_list(obj.args[1]))})",
     "CallJSRuntime": lambda obj: f"ACCU = {obj.args[0][1:-1]}({', '.join(expand_reg_list(obj.args[1]))})",
     "InvokeIntrinsic": lambda obj: invoke_intrinsic(obj.args),
     "Construct": lambda obj: f"ACCU = new {obj.args[0]}({', '.join(expand_reg_list(obj.args[1]))})",
-    "ConstructWithSpread": lambda obj: f"ACCU = new {obj.args[0]}(...{', '.join(expand_reg_list(obj.args[1]))})",
+    "ConstructWithSpread": lambda obj: f"ACCU = new {obj.args[0]}({expand_reg_list_spread(obj.args[1])})",
 
     ###################
     # Create operands #
