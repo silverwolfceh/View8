@@ -36,6 +36,10 @@ class SharedFunctionInfo:
         parameters = ', '.join([f'a{i}' for i in range(int(self.argument_count) - 1)])
         if self.kind == "AsyncFunction":
             return f"async function {self.name}({parameters})"
+        elif self.kind == "GeneratorFunction":
+            return f"function* {self.name}({parameters})"
+        elif self.kind == "AsyncGeneratorFunction":
+            return f"async function* {self.name}({parameters})"
         else:
             return f"function {self.name}({parameters})"
 
