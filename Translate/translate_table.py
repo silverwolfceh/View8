@@ -276,7 +276,7 @@ operands = {
     "ToObject": lambda obj: f"ACCU = ToObject(ACCU)",
     "ToName": lambda obj: f"ACCU = ToName(ACCU)",
     "ToBooleanLogicalNot": lambda obj: f"ACCU = !(ACCU)",
-    "CloneObject": lambda obj: f"ACCU = CloneObject({obj.args[0]})",
+    "CloneObject": lambda obj: f"ACCU = {'{'} ...{obj.args[0]} {'}'}",
 
     #######################
     # Arithmetic operands #
