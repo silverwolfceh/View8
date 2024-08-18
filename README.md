@@ -55,14 +55,20 @@
 
 ### Building The Disassembler
 
-Guide/disassembler/patch based on [v8dasm](https://github.com/noelex/v8dasm) and <https://github.com/v8/v8/tree/11.3.244.8>.
+Guide/disassembler/patch based on [v8dasm](https://github.com/noelex/v8dasm) and <https://github.com/v8/v8/tree/10.6.194.26>.
 
-1. Check out your V8 version: <https://v8.dev/docs/source-code>
+The disassembler can be built to be compatible with either Node or Electron (depending on how the `.jsc` file was generated).
+
+The v8 version of a `.jsc` file can be found using <https://j4k0xb.github.io/v8-version-analyzer>, but sometimes Node or Electron create their own custom versions. In that case just choose the closest one.
+
+1. Check out your v8 version: <https://v8.dev/docs/source-code>
 2. Apply the [patch](./Disassembler/v8.patch):
 
     ```sh
     git apply v8.patch
     ```
+
+    If it fails, look at the patch file and apply the changes manually.
 
 3. Create a build configuration:
 
@@ -70,7 +76,7 @@ Guide/disassembler/patch based on [v8dasm](https://github.com/noelex/v8dasm) and
     ./tools/dev/v8gen.py x64.release
     ```
 
-4. Edit the build flags in `out.gn/x64.release/args.gn` (copied the necessary ones from Node.js):
+4. Edit the build flags in `out.gn/x64.release/args.gn`:
 
     ```ini
     dcheck_always_on = false
@@ -84,8 +90,10 @@ Guide/disassembler/patch based on [v8dasm](https://github.com/noelex/v8dasm) and
     v8_static_library = true
     v8_enable_disassembler = true
     v8_enable_object_print = true
-    v8_enable_pointer_compression = false
     ```
+
+    - For **Node**: add `v8_enable_pointer_compression = false`
+    - For **Electron**: add `v8_enable_pointer_compression = true` and `v8_enable_sandbox = true`
 
 5. Build the static library:
 
@@ -95,6 +103,14 @@ Guide/disassembler/patch based on [v8dasm](https://github.com/noelex/v8dasm) and
 
 6. Compile the [disassembler](./Disassembler/v8dasm.cpp):
 
-    ```sh
-    g++ -g -I. -Iinclude v8dasm.cpp -o v8dasm -fno-rtti -lv8_monolith -lv8_libbase -lv8_libplatform -ldl -Lout.gn/x64.release/obj/ -pthread -std=c++17
-    ```
+    - For **Node**:
+
+        ```sh
+        clang++ v8dasm.cpp -g -std=c++17 -Iinclude -Lout.gn/x64.release/obj -lv8_libbase -lv8_libplatform -lv8_monolith -o v8dasm
+        ```
+
+    - For **Electron**:
+
+        ```sh
+        clang++ v8dasm.cpp -g -std=c++17 -Iinclude -Lout.gn/x64.release/obj -lv8_libbase -lv8_libplatform -lv8_monolith -o v8dasm -DV8_COMPRESS_POINTERS -DV8_ENABLE_SANDBOX
+        ```

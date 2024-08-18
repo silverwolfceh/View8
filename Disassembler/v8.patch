@@ -1,31 +1,31 @@
 diff --git a/src/diagnostics/objects-printer.cc b/src/diagnostics/objects-printer.cc
-index 30d8095f62a..21e91384ee4 100644
+index 5b546e29926..45d7b50b7f5 100644
 --- a/src/diagnostics/objects-printer.cc
 +++ b/src/diagnostics/objects-printer.cc
-@@ -1821,7 +1821,6 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
-   } else {
-     os << "<unavailable>";
-   }
+@@ -1687,7 +1687,6 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
+   os << "\n - data: " << Brief(function_data(kAcquireLoad));
+   os << "\n - code (from data): ";
+   os << Brief(GetCode());
 -  PrintSourceCode(os);
    // Script files are often large, thus only print their {Brief} representation.
    os << "\n - script: " << Brief(script());
    os << "\n - function token position: " << function_token_position();
-@@ -1844,6 +1843,10 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
+@@ -1710,6 +1709,10 @@ void SharedFunctionInfo::SharedFunctionInfoPrint(std::ostream& os) {
      os << "<none>";
    }
    os << "\n";
 +  os << "\nStart BytecodeArray\n";
-+  this->GetBytecodeArray(isolate).Disassemble(os);
++  this->GetActiveBytecodeArray().Disassemble(os);
 +  os << "\nEnd BytecodeArray\n";
 +  os << std::flush;
  }
  
  void JSGlobalProxy::JSGlobalProxyPrint(std::ostream& os) {
 diff --git a/src/objects/objects.cc b/src/objects/objects.cc
-index 43ea4a73502..503fed68ba4 100644
+index 559160358c1..641fbb36ef5 100644
 --- a/src/objects/objects.cc
 +++ b/src/objects/objects.cc
-@@ -1828,6 +1828,16 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+@@ -1850,6 +1850,16 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
      os << accumulator.ToCString().get();
      return;
    }
@@ -42,7 +42,7 @@ index 43ea4a73502..503fed68ba4 100644
    switch (map(cage_base).instance_type()) {
      case MAP_TYPE: {
        os << "<Map";
-@@ -1913,15 +1923,20 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+@@ -1935,15 +1945,20 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
           << "]>";
        break;
      case FIXED_ARRAY_TYPE:
@@ -68,7 +68,7 @@ index 43ea4a73502..503fed68ba4 100644
        break;
      case BYTE_ARRAY_TYPE:
        os << "<ByteArray[" << ByteArray::cast(*this).length() << "]>";
-@@ -2000,6 +2015,9 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+@@ -2022,6 +2037,9 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
        } else {
          os << "<SharedFunctionInfo>";
        }
@@ -79,22 +79,23 @@ index 43ea4a73502..503fed68ba4 100644
      }
      case JS_MESSAGE_OBJECT_TYPE:
 diff --git a/src/snapshot/code-serializer.cc b/src/snapshot/code-serializer.cc
-index c83e8e4581a..f730fb722eb 100644
+index 3f380e6a2ff..4f23e67f695 100644
 --- a/src/snapshot/code-serializer.cc
 +++ b/src/snapshot/code-serializer.cc
-@@ -447,6 +447,11 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
+@@ -466,6 +466,12 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
+     if (FLAG_profile_deserialization) PrintF("[Deserializing failed]\n");
      return MaybeHandle<SharedFunctionInfo>();
    }
- 
++
 +  std::cout << "\nStart SharedFunctionInfo\n";
-+  result->GetBytecodeArray(isolate).Disassemble(std::cout);
++  result->GetActiveBytecodeArray().Disassemble(std::cout);
 +  std::cout << "\nEnd SharedFunctionInfo\n";
 +  std::cout << std::flush;
 +
-   // Check whether the newly deserialized data should be merged into an
-   // existing Script from the Isolate compilation cache. If so, perform
-   // the merge in a single-threaded manner since this deserialization was
-@@ -652,9 +657,7 @@ SerializedCodeData::SerializedCodeData(const std::vector<byte>* payload,
+   BaselineBatchCompileIfSparkplugCompiled(isolate,
+                                           Script::cast(result->script()));
+   if (FLAG_profile_deserialization) {
+@@ -651,9 +657,7 @@ SerializedCodeData::SerializedCodeData(const std::vector<byte>* payload,
  
  SerializedCodeSanityCheckResult SerializedCodeData::SanityCheck(
      uint32_t expected_source_hash) const {
@@ -105,3 +106,15 @@ index c83e8e4581a..f730fb722eb 100644
  }
  
  SerializedCodeSanityCheckResult SerializedCodeData::SanityCheckJustSource(
+diff --git a/src/snapshot/deserializer.cc b/src/snapshot/deserializer.cc
+index 09fffbbed37..8ce3b2680ef 100644
+--- a/src/snapshot/deserializer.cc
++++ b/src/snapshot/deserializer.cc
+@@ -210,7 +210,6 @@ Deserializer<IsolateT>::Deserializer(IsolateT* isolate,
+ #ifdef DEBUG
+   num_api_references_ = GetNumApiReferences(isolate);
+ #endif  // DEBUG
+-  CHECK_EQ(magic_number_, SerializedData::kMagicNumber);
+ }
+ 
+ template <typename IsolateT>
