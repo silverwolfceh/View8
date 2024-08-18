@@ -112,7 +112,7 @@ operands = {
     "CallUndefinedReceiver0": lambda obj: f"ACCU = {obj.args[0]}()",
     "CallUndefinedReceiver1": lambda obj: f"ACCU = {obj.args[0]}({obj.args[1]})",
     "CallUndefinedReceiver2": lambda obj: f"ACCU = {obj.args[0]}({obj.args[1]}, {obj.args[2]})",
-    "CallWithSpread": lambda obj: f"ACCU = {obj.args[0]}({(expand_reg_list_spread(obj.args[1]))})",
+    "CallWithSpread": lambda obj: f"ACCU = {obj.args[0]}.call({(expand_reg_list_spread(obj.args[1]))})",
     "CallRuntime": lambda obj: f"ACCU = {obj.args[0][1:-1]}({', '.join(expand_reg_list(obj.args[1]))})",
     "CallJSRuntime": lambda obj: f"ACCU = {obj.args[0][1:-1]}({', '.join(expand_reg_list(obj.args[1]))})",
     "InvokeIntrinsic": lambda obj: invoke_intrinsic(obj.args),
