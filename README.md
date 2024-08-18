@@ -93,7 +93,6 @@ The v8 version of a `.jsc` file can be found using <https://j4k0xb.github.io/v8-
     ```
 
     - For **Node**: add `v8_enable_pointer_compression = false`
-    - For **Electron**: add `v8_enable_pointer_compression = true` and `v8_enable_sandbox = true`
 
 5. Build the static library:
 
@@ -112,5 +111,5 @@ The v8 version of a `.jsc` file can be found using <https://j4k0xb.github.io/v8-
     - For **Electron**:
 
         ```sh
-        clang++ v8dasm.cpp -g -std=c++17 -Iinclude -Lout.gn/x64.release/obj -lv8_libbase -lv8_libplatform -lv8_monolith -o v8dasm -DV8_COMPRESS_POINTERS -DV8_ENABLE_SANDBOX
+        clang++ v8dasm.cpp -g -std=c++17 -Iinclude -Lout.gn/x64.release/obj -lv8_libbase -lv8_libplatform -lv8_monolith -o v8dasm -DV8_COMPRESS_POINTERS
         ```
