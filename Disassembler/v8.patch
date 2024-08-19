@@ -88,7 +88,7 @@ index 3f380e6a2ff..4f23e67f695 100644
    }
 +
 +  std::cout << "\nStart SharedFunctionInfo\n";
-+  result->GetActiveBytecodeArray().Disassemble(std::cout);
++  result->SharedFunctionInfoPrint(std::cout);
 +  std::cout << "\nEnd SharedFunctionInfo\n";
 +  std::cout << std::flush;
 +
