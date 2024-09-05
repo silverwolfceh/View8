@@ -22,7 +22,7 @@ index 5b546e29926..45d7b50b7f5 100644
  
  void JSGlobalProxy::JSGlobalProxyPrint(std::ostream& os) {
 diff --git a/src/objects/objects.cc b/src/objects/objects.cc
-index 559160358c1..641fbb36ef5 100644
+index 559160358c1..420b3da2b66 100644
 --- a/src/objects/objects.cc
 +++ b/src/objects/objects.cc
 @@ -1850,6 +1850,16 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
@@ -42,33 +42,32 @@ index 559160358c1..641fbb36ef5 100644
    switch (map(cage_base).instance_type()) {
      case MAP_TYPE: {
        os << "<Map";
-@@ -1935,15 +1945,20 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
-          << "]>";
+@@ -1936,14 +1946,24 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
        break;
      case FIXED_ARRAY_TYPE:
--      os << "<FixedArray[" << FixedArray::cast(*this).length() << "]>";
+       os << "<FixedArray[" << FixedArray::cast(*this).length() << "]>";
 +      os << "\nStart FixedArray\n";
 +      FixedArray::cast(*this).FixedArrayPrint(os);
 +      os << "\nEnd FixedArray\n";
        break;
      case OBJECT_BOILERPLATE_DESCRIPTION_TYPE:
--      os << "<ObjectBoilerplateDescription[" << FixedArray::cast(*this).length()
--         << "]>";
+       os << "<ObjectBoilerplateDescription[" << FixedArray::cast(*this).length()
+          << "]>";
 +      os << "\nStart ObjectBoilerplateDescription\n";
 +      ObjectBoilerplateDescription::cast(*this)
 +          .ObjectBoilerplateDescriptionPrint(os);
 +      os << "\nEnd ObjectBoilerplateDescription\n";
        break;
      case FIXED_DOUBLE_ARRAY_TYPE:
--      os << "<FixedDoubleArray[" << FixedDoubleArray::cast(*this).length()
--         << "]>";
+       os << "<FixedDoubleArray[" << FixedDoubleArray::cast(*this).length()
+          << "]>";
 +      os << "\nStart FixedDoubleArray\n";
 +      FixedDoubleArray::cast(*this).FixedDoubleArrayPrint(os);
 +      os << "\nEnd FixedDoubleArray\n";
        break;
      case BYTE_ARRAY_TYPE:
        os << "<ByteArray[" << ByteArray::cast(*this).length() << "]>";
-@@ -2022,6 +2037,9 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
+@@ -2022,6 +2042,9 @@ void HeapObject::HeapObjectShortPrint(std::ostream& os) {
        } else {
          os << "<SharedFunctionInfo>";
        }
@@ -79,7 +78,7 @@ index 559160358c1..641fbb36ef5 100644
      }
      case JS_MESSAGE_OBJECT_TYPE:
 diff --git a/src/snapshot/code-serializer.cc b/src/snapshot/code-serializer.cc
-index 3f380e6a2ff..4f23e67f695 100644
+index 3f380e6a2ff..1f55cb9009a 100644
 --- a/src/snapshot/code-serializer.cc
 +++ b/src/snapshot/code-serializer.cc
 @@ -466,6 +466,12 @@ MaybeHandle<SharedFunctionInfo> CodeSerializer::Deserialize(
