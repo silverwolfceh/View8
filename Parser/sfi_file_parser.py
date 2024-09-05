@@ -74,6 +74,8 @@ def parse_const_line(lines, func_name):
 
     if not address:
         return var_idx, value
+    if value == "<null>":
+        return var_idx, "null"
     if value.startswith("<String"):
         value = value.split("#", 1)[-1].rstrip('> ').replace('"', '\\"')
         return var_idx, f'"{value}"'
