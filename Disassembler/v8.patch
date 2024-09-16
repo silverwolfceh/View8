@@ -77,6 +77,24 @@ index 559160358c1..420b3da2b66 100644
        break;
      }
      case JS_MESSAGE_OBJECT_TYPE:
+diff --git a/src/objects/string.cc b/src/objects/string.cc
+index cd134f84055..285d55fda5e 100644
+--- a/src/objects/string.cc
++++ b/src/objects/string.cc
+@@ -477,13 +477,6 @@ void String::StringShortPrint(StringStream* accumulator) {
+   accumulator->Add("<String[%u]: ", len);
+   accumulator->Add(PrefixForDebugPrint());
+ 
+-  if (len > kMaxShortPrintLength) {
+-    accumulator->Add("...<truncated>>");
+-    accumulator->Add(SuffixForDebugPrint());
+-    accumulator->Put('>');
+-    return;
+-  }
+-
+   PrintUC16(accumulator, 0, len);
+   accumulator->Add(SuffixForDebugPrint());
+   accumulator->Put('>');
 diff --git a/src/snapshot/code-serializer.cc b/src/snapshot/code-serializer.cc
 index 3f380e6a2ff..1f55cb9009a 100644
 --- a/src/snapshot/code-serializer.cc
