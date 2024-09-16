@@ -65,10 +65,10 @@ The v8 version of a `.jsc` file can be found using <https://j4k0xb.github.io/v8-
 2. Apply the [patch](./Disassembler/v8.patch):
 
     ```sh
-    git apply v8.patch
+    git apply -3 v8.patch
     ```
 
-    If it fails, look at the patch file and apply the changes manually.
+    And resolve any conflicts that may occur in different versions.
 
 3. Create a build configuration:
 
